@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'net.taptappun.taku.kobayashi.sharphackathon2023'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "net.taptappun.taku.kobayashi.sharphackathon2023"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
