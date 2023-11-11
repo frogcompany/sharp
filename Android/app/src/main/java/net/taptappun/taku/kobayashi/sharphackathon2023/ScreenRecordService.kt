@@ -1,6 +1,6 @@
 package net.taptappun.taku.kobayashi.sharphackathon2023
 
-import android.annotation.SuppressLint
+import android.R.attr.bitmap
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -8,6 +8,8 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -22,6 +24,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+
 
 // 参考: https://takusan23.github.io/Bibouroku/2020/04/06/MediaProjection/
 class ScreenRecordService : Service() {
@@ -168,13 +171,25 @@ class ScreenRecordService : Service() {
         projection.stop()
     }
 
+    private var isSaved = false;
+
     private val imageReaderListener = ImageReader.OnImageAvailableListener { reader: ImageReader ->
         val image = reader.acquireLatestImage()
         if(image != null) {
-            Log.d(MainActivity.TAG, "width:${image.width} height:${image.height} planeSize:${image.planes.size}")
             for (imagePlane in image.planes) {
+                val pixelStride: Int = imagePlane.getPixelStride()
+                val rowStride: Int = imagePlane.getRowStride()
+                val rowPadding: Int = rowStride - pixelStride * image.width
+                val bitmap = Bitmap.createBitmap(image.width + rowPadding / pixelStride, image.height, Bitmap.Config.ARGB_8888)
+                bitmap.copyPixelsFromBuffer(imagePlane.buffer)
+                if(!isSaved) {
+                    Log.d(MainActivity.TAG, "save")
+                    Util.saveImageToLocalStorage(applicationContext, bitmap)
+                    isSaved = true;
+                }
 //            Log.d(ScreenScanCommonActivity.TAG, "rowStride:${imagePlane.rowStride} pixelStride:${imagePlane.pixelStride}")
             }
+            image.close()
         }
         /*
         val planes = image.planes
@@ -196,7 +211,6 @@ class ScreenRecordService : Service() {
         )
         mQueue.add(MyData(mBuffer, image.timestamp, false))
         */
-        image.close()
     }
 
 
