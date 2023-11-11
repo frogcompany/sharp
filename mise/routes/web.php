@@ -18,10 +18,11 @@ Route::get('/', function () {
 });
 
 use App\Http\Controllers\ChatGptController;
+use App\Http\Controllers\DetailController;
 
 Route::get('/chat', [ChatGptController::class, 'index'])->name('chat_gpt-index');
 Route::post('/chat', [ChatGptController::class, 'chat'])->name('chat_gpt-chat');
-
+Route::get('/detail/{id}', [DetailController::class, 'index'])->name('detail-index');
 
 
 Auth::routes();

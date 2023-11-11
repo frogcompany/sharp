@@ -11,10 +11,20 @@ class Product extends Model
     use HasFactory,HasUlids;
 
     public $table = 'products';
-    
+
     protected $primaryKey = 'id';
     protected $fillable = [
-        'name',
+        'genre',
+        'title',
+        'bodys',
+        'url',
+        'img',
+        'price',
+        'tax',
+        'pricetax',
+        'etc',
+//        'created_at',
+//        'updated_at'
     ];
 
 

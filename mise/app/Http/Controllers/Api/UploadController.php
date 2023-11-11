@@ -15,7 +15,7 @@ class UploadController extends Controller
             return response()->json(['upload_file_not_found'], 400);
         }
 
-        $allowedfileExtension = ['pdf', 'jpg', 'png'];
+        $allowedFileExtension = ['pdf', 'jpg', 'png'];
         $files = $request->file('fileName');
         $errors = [];
         $array = [];
@@ -24,7 +24,7 @@ class UploadController extends Controller
 
             $extension = $file->getClientOriginalExtension();
 
-            $check = in_array($extension, $allowedfileExtension);
+            $check = in_array($extension, $allowedFileExtension);
 
             if ($check) {
                 foreach ($request->fileName as $mediaFiles) {
@@ -51,6 +51,8 @@ class UploadController extends Controller
 
         $array = array(
             0 => array(
+                "id"   => 1,
+                "genre" => "服",
                 "title" => "誰でもイケメンになる服",
                 "bodys" => "ドラマできてたやつ",
                 "url" => "https://miseai.site/detail/1/",
@@ -62,14 +64,16 @@ class UploadController extends Controller
             ),
 
             1 => array(
+                "id"   => 2,
+                "genre" => "食品",
                 "title" => "サッポロ一番味噌ラーメン",
                 "bodys" => "アニメで小池さんが食べてた食品",
                 "url" => "https://miseai.site/detail/2/",
                 "img" => "https://miseai.site/img/koikedammy.jpg",
                 "price" => "200",
-                "tax" => "20",
-                "pricetax" => "220",
-                "etc" => "サンヨー食品、一袋"
+                "tax" => "16",
+                "pricetax" => "216",
+                "etc" => "サンヨー食品、一袋 (軽減税率対象)"
             )
 
         );
