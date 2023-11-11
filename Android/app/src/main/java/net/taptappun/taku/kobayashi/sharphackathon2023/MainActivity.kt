@@ -2,13 +2,17 @@ package net.taptappun.taku.kobayashi.sharphackathon2023
 
 import android.app.Activity
 import android.app.Service
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -23,22 +27,56 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private var bindService: ScreenRecordService? = null
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(p0: ComponentName) {
+            unbindScreenRecordService()
+        }
+
+        override fun onServiceConnected(p0: ComponentName, binder: IBinder) {
+            val binder = binder as ScreenRecordService.ScreenRecordBinder
+            bindService = binder.getService()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val mediaProjectionManager = getSystemService(Service.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        binding.startServiceButton.setOnClickListener {
+            mediaProjectionStartActivityForResult.launch(mediaProjectionManager.createScreenCaptureIntent())
+        }
+        binding.bindServiceButton.setOnClickListener {
+            val intent = Intent(this, ScreenRecordService::class.java)
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
+        binding.unbindServiceButton.setOnClickListener {
+            unbindScreenRecordService()
+        }
+        binding.stopServiceButton.setOnClickListener {
+            val intent = Intent(this, ScreenRecordService::class.java)
+            stopService(intent)
+        }
+
         checkCanDrawOverlay {
             val permissions = mutableListOf<String>()
             checkAndRequestPermissions(permissions.toTypedArray()) {
-                val mediaProjectionManager = getSystemService(Service.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                mediaProjectionStartActivityForResult.launch(mediaProjectionManager.createScreenCaptureIntent())
             }
         }
 
         // Example of a call to a native method
-        binding.sampleText.text = stringFromJNI()
+        //binding.sampleText.text = stringFromJNI()
+    }
+
+    private fun unbindScreenRecordService() {
+        if(bindService != null) {
+            unbindService(serviceConnection)
+            bindService = null
+        }
     }
 
     private fun checkCanDrawOverlay(gratedCallback: () -> Unit) {

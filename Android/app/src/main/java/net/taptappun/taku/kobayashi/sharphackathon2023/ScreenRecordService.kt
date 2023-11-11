@@ -14,9 +14,11 @@ import android.hardware.display.VirtualDisplay
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
@@ -24,10 +26,11 @@ import android.view.WindowManager
 // 参考: https://takusan23.github.io/Bibouroku/2020/04/06/MediaProjection/
 class ScreenRecordService : Service() {
     // 画面録画で使う
-    lateinit var projectionManager: MediaProjectionManager
-    lateinit var projection: MediaProjection
-    lateinit var virtualDisplay: VirtualDisplay
-    lateinit var imageReader: ImageReader
+    private lateinit var projectionManager: MediaProjectionManager
+    private lateinit var projection: MediaProjection
+    private lateinit var virtualDisplay: VirtualDisplay
+    private lateinit var imageReader: ImageReader
+    private var handleBinder = ScreenRecordBinder()
     private lateinit var overlayView: View
     private lateinit var windowManager: WindowManager
 
@@ -40,8 +43,20 @@ class ScreenRecordService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    inner class ScreenRecordBinder : Binder() {
+        fun getService(): ScreenRecordService = this@ScreenRecordService
+    }
+
+    override fun onBind(intent: Intent): IBinder {
+        Log.d(MainActivity.TAG, "onBind")
+        return handleBinder
+    }
+
+    override fun onUnbind(intent: Intent): Boolean {
+        // All clients have unbound with unbindService()
+        Log.d(MainActivity.TAG, "onUnbind")
+        // allowUnbind
+        return true
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -156,8 +171,10 @@ class ScreenRecordService : Service() {
     private val imageReaderListener = ImageReader.OnImageAvailableListener { reader: ImageReader ->
         val image = reader.acquireLatestImage()
 //        Log.d(ScreenScanCommonActivity.TAG, "width:${image.width} height:${image.height} planeSize:${image.planes.size}")
-        for (imagePlane in image.planes) {
+        if(image != null) {
+            for (imagePlane in image.planes) {
 //            Log.d(ScreenScanCommonActivity.TAG, "rowStride:${imagePlane.rowStride} pixelStride:${imagePlane.pixelStride}")
+            }
         }
         /*
         val planes = image.planes
