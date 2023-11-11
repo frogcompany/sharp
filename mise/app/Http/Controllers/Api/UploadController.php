@@ -1,51 +1,81 @@
 <?php
+
 namespace App\Http\Controllers\Api;
- 
+
 use App\Http\Controllers\Controller;
 use App\Models\Image;
-use Validator;
 use Illuminate\Http\Request;
- 
+
 class UploadController extends Controller
 {
- 
-public function store(Request $request)
-{
-    if(!$request->hasFile('fileName')) {
-        return response()->json(['upload_file_not_found'], 400);
-    }
- 
-    $allowedfileExtension=['pdf','jpg','png'];
-    $files = $request->file('fileName'); 
-    $errors = [];
- 
-    foreach ($files as $file) {      
- 
-        $extension = $file->getClientOriginalExtension();
- 
-        $check = in_array($extension,$allowedfileExtension);
- 
-        if($check) {
-            foreach($request->fileName as $mediaFiles) {
- 
-                $path = $mediaFiles->store('public/images');
-                $name = $mediaFiles->getClientOriginalName();
-      
-                //store image file into directory and db
-                $save = new Image();
-                $save->title = $name;
-                $save->path = $path;
-                $save->save();
-            }
-        } else {
-            return response()->json(['invalid_file_format'], 422);
-        }
- 
-        return response()->json(['file_uploaded'], 200);
- 
-    }
- 
 
-}
+    public function store(Request $request)
+    {
+        if (!$request->hasFile('fileName')) {
+            return response()->json(['upload_file_not_found'], 400);
+        }
+
+        $allowedfileExtension = ['pdf', 'jpg', 'png'];
+        $files = $request->file('fileName');
+        $errors = [];
+        $array = [];
+
+        foreach ($files as $file) {
+
+            $extension = $file->getClientOriginalExtension();
+
+            $check = in_array($extension, $allowedfileExtension);
+
+            if ($check) {
+                foreach ($request->fileName as $mediaFiles) {
+
+                    $path = $mediaFiles->store('public/images');
+                    $name = $mediaFiles->getClientOriginalName();
+
+                    //store image file into directory and db
+                    $save = new Image();
+                    $save->title = $name;
+                    $save->path = $path;
+                    $save->save();
+                }
+            } else {
+                return response()->json(['invalid_file_format'], 422);
+            }
+//            $array
+        }
+
+        // エラー確認
+        if(count($errors)>0){
+            return response()->json(['error'], 422);
+        }
+
+        $array = array(
+            0 => array(
+                "title" => "誰でもイケメンになる服",
+                "bodys" => "ドラマできてたやつ",
+                "url" => "https://miseai.site/detail/1/",
+                "img" => "https://miseai.site/img/fukudammy.jpg",
+                "price" => "10,000",
+                "tax" => "1,000",
+                "pricetax" => "11,000",
+                "etc" => "SIZE:XL COLOR:BLUE"
+            ),
+
+            1 => array(
+                "title" => "サッポロ一番味噌ラーメン",
+                "bodys" => "アニメで小池さんが食べてた食品",
+                "url" => "https://miseai.site/detail/2/",
+                "img" => "https://miseai.site/img/koikedammy.jpg",
+                "price" => "200",
+                "tax" => "20",
+                "pricetax" => "220",
+                "etc" => "サンヨー食品、一袋"
+            )
+
+        );
+
+        return response()->json($array, 200);
+
+    }
 
 }
