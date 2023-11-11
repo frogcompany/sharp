@@ -170,8 +170,8 @@ class ScreenRecordService : Service() {
 
     private val imageReaderListener = ImageReader.OnImageAvailableListener { reader: ImageReader ->
         val image = reader.acquireLatestImage()
-//        Log.d(ScreenScanCommonActivity.TAG, "width:${image.width} height:${image.height} planeSize:${image.planes.size}")
         if(image != null) {
+            Log.d(MainActivity.TAG, "width:${image.width} height:${image.height} planeSize:${image.planes.size}")
             for (imagePlane in image.planes) {
 //            Log.d(ScreenScanCommonActivity.TAG, "rowStride:${imagePlane.rowStride} pixelStride:${imagePlane.pixelStride}")
             }
