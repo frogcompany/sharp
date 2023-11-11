@@ -13,4 +13,17 @@ class DetailController extends Controller
 
     }
 
+    //
+    public function buy(Request $request)
+    {
+        return view('buy');
+    }
+
+
+    //
+    public function complete(Request $request)
+    {
+        return view('complete');
+    }
+
 }
