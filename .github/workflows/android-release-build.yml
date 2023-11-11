@@ -52,6 +52,12 @@ jobs:
       working-directory: ${{ matrix.root-project-path }}
       run: |
         echo "ndk.dir=$PWD/ndk/${{ matrix.ndk-version }}" >> ./local.properties
+    - name: setup google-services.json
+      working-directory: ${{ matrix.root-project-path }}
+      env:
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        echo "${GOOGLE_SERVICES_JSON}" >> ./app/google-services.json
     - name: Setup Build Configs
       working-directory: ${{ matrix.root-project-path }}
       env:
