@@ -24,6 +24,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import com.google.mlkit.vision.common.InputImage
 
 
 // 参考: https://takusan23.github.io/Bibouroku/2020/04/06/MediaProjection/
@@ -36,6 +37,9 @@ class ScreenRecordService : Service() {
     private var handleBinder = ScreenRecordBinder()
     private lateinit var overlayView: View
     private lateinit var windowManager: WindowManager
+    private val detectors = setOf(
+        ObjectTrackingDetector(),
+    )
 
     override fun onCreate() {
         super.onCreate()
@@ -168,6 +172,9 @@ class ScreenRecordService : Service() {
     private fun stopRec() {
         imageReader.close()
         virtualDisplay.release()
+        for (detector in detectors) {
+            detector.release()
+        }
         projection.stop()
     }
 
@@ -182,6 +189,10 @@ class ScreenRecordService : Service() {
                 val rowPadding: Int = rowStride - pixelStride * image.width
                 val bitmap = Bitmap.createBitmap(image.width + rowPadding / pixelStride, image.height, Bitmap.Config.ARGB_8888)
                 bitmap.copyPixelsFromBuffer(imagePlane.buffer)
+                val image = InputImage.fromBitmap(bitmap, 0)
+                for (detector in detectors) {
+                    detector.detect(image)
+                }
                 if(!isSaved) {
                     Util.saveImageToLocalStorage(applicationContext, bitmap)
                     isSaved = true;
