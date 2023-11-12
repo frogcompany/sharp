@@ -7,11 +7,11 @@
 
 <body>
 {{-- フォーム --}}
-<form method="POST" action="/detail/buy/">
+<form method="POST" action="/buy">
 
     <h2>サッポロ一番味噌ラーメン</h2>
     <h5 align="right">食品</h5>
-    <img src="https://miseai.site/img/koikedammy.jpg" width="100%" alt="商品画像"/>
+    <img src="https://miseai.site/img/koikedammy.jpg" width="300" alt="商品画像"/>
     <h5>税込価格: 216円(税抜:200円 税額:16円)</h5>
     <p>アニメで小池さんが食べてた食品</p>
     <p>サンヨー食品、一袋 (軽減税率対象)</p>

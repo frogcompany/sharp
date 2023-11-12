@@ -7,7 +7,7 @@
 
 <body>
 {{-- フォーム --}}
-<form method="POST" action="/detail/complete/">
+<form method="POST" action="/complete">
 <h1>最終確認</h1>
 
     <h2>サッポロ一番味噌ラーメン</h2>

@@ -11,10 +11,12 @@ class Image extends Model
     use HasFactory,HasUlids;
 
     public $table = 'images';
-    
+
     protected $primaryKey = 'id';
     protected $fillable = [
-        'name',
+        'title',
+        'path',
+        'url',
     ];
 
 

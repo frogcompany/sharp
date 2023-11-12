@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Image;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UploadController extends Controller
 {
@@ -19,30 +20,55 @@ class UploadController extends Controller
         $files = $request->file('fileName');
         $errors = [];
         $array = [];
+        $file = $files;
 
-        foreach ($files as $file) {
+        Log::debug(__LINE__.":".print_r($files,true));
 
-            $extension = $file->getClientOriginalExtension();
+        $this->validate($request, [
+            'fileName' => 'required|file|image|mimes:jpeg,png,jpg|max:9600'
+        ]);
+        if ($request->file('fileName')->isValid([])) {
+            $path = $request->file('fileName')->store('public');
+            //store image file into directory and db
+            $save = new Image();
+            $save->title = date("YmdHis");
+            $save->path = $path;
+            $save->url = "https://miseai.site/storage/".str_replace("public/","",$path);
+            $save->save();
 
-            $check = in_array($extension, $allowedFileExtension);
-
-            if ($check) {
-                foreach ($request->fileName as $mediaFiles) {
-
-                    $path = $mediaFiles->store('public/images');
-                    $name = $mediaFiles->getClientOriginalName();
-
-                    //store image file into directory and db
-                    $save = new Image();
-                    $save->title = $name;
-                    $save->path = $path;
-                    $save->save();
-                }
-            } else {
-                return response()->json(['invalid_file_format'], 422);
-            }
-//            $array
+//            $user = User::find($id);
+//            return view('comment')->with([
+//                'filename' => basename($path),
+//                'user' => $user,
+//            ]);
         }
+
+//        foreach ($files as $file) {
+//            Log::debug(__LINE__.":".print_r($file,true));
+//
+//            $extension = $file->getClientOriginalExtension();
+//
+//            $check = in_array($extension, $allowedFileExtension);
+//
+//            if ($check) {
+//                foreach ($request->fileName as $mediaFiles) {
+//
+//                    Log::debug(__LINE__.":".print_r($mediaFiles,true));
+//
+//                    $path = $mediaFiles->store('public/images');
+//                    $name = $mediaFiles->getClientOriginalName();
+//
+//                    //store image file into directory and db
+//                    $save = new Image();
+//                    $save->title = $name;
+//                    $save->path = $path;
+//                    $save->save();
+//                }
+//            } else {
+//                return response()->json(['invalid_file_format'], 422);
+//            }
+//            $array
+//        }
 
         // エラー確認
         if(count($errors)>0){

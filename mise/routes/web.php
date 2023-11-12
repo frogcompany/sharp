@@ -25,6 +25,8 @@ Route::post('/chat', [ChatGptController::class, 'chat'])->name('chat_gpt-chat');
 Route::get('/detail/{id}', [DetailController::class, 'index'])->name('detail-index');
 Route::post('/detail/buy', [DetailController::class, 'buy'])->name('detail-buy');
 Route::post('/detail/complete', [DetailController::class, 'complete'])->name('detail-complete');
+Route::post('/buy', [DetailController::class, 'buy'])->name('detail-buy');
+Route::post('/complete', [DetailController::class, 'complete'])->name('detail-complete');
 
 
 Auth::routes();
