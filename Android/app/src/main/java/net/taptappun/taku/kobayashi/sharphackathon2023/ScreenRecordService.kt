@@ -38,13 +38,12 @@ class ScreenRecordService : Service() {
     private var handleBinder = ScreenRecordBinder()
     private lateinit var overlayView: View
     private lateinit var windowManager: WindowManager
-    private val detectors = setOf<ImageDetector<DetectedObject>>(
-        ObjectTrackingDetector(this.applicationContext)
-    )
+    private val detectors = mutableSetOf<ImageDetector<DetectedObject>>()
 
     override fun onCreate() {
         super.onCreate()
         val layoutInflater = LayoutInflater.from(this)
+        detectors.add(ObjectTrackingDetector(this.applicationContext))
 
         // レイアウトファイルからInfalteするViewを作成
         overlayView = layoutInflater.inflate(R.layout.overlay_view, null)
