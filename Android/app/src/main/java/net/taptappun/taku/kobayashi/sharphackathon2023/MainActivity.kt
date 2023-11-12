@@ -21,6 +21,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import net.taptappun.taku.kobayashi.sharphackathon2023.databinding.ActivityMainBinding
 import java.util.concurrent.Executors
 
@@ -76,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                 val executorService = Executors.newSingleThreadExecutor()
                 executorService.execute {
                     val responseBody = Util.uploadFile(applicationContext, uri)
+                    val listType = object : TypeToken<List<UploadImageResult>>() {}.type
+                    val json = Gson().fromJson<List<UploadImageResult>>(responseBody, listType)
+                    Log.d(MainActivity.TAG, json.toString())
                     Log.d(MainActivity.TAG, responseBody)
                 }
             }
