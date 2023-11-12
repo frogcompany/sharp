@@ -1,11 +1,12 @@
 package net.taptappun.taku.kobayashi.sharphackathon2023
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.Size
 import com.google.mlkit.vision.common.InputImage
 
-abstract class ImageDetector<T> {
+abstract class ImageDetector<T>(protected val context: Context) {
     private var markingBitmap: Bitmap? = null
 
     fun release() {

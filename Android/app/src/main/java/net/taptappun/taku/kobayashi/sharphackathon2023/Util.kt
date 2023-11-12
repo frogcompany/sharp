@@ -38,7 +38,7 @@ import java.util.UUID
 
 class Util {
     companion object {
-        fun saveImageToLocalStorage(context: Context, image: Bitmap) {
+        fun saveImageToLocalStorage(context: Context, image: Bitmap): Uri {
             val uuidFileName = "${UUID.randomUUID().toString()}.jpg"
 
             val collection = if (Build.VERSION.SDK_INT >= 29) {
@@ -84,6 +84,7 @@ class Util {
             } else {
                 contentResolver.update(contentUri, contentValues, null, null)
             }
+            return contentUri
         }
 
         fun uploadFile(vararg uploadFiles: File): String {

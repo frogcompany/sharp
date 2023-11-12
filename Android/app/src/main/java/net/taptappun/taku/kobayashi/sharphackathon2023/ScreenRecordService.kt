@@ -25,6 +25,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.objects.DetectedObject
 
 
 // 参考: https://takusan23.github.io/Bibouroku/2020/04/06/MediaProjection/
@@ -37,8 +38,8 @@ class ScreenRecordService : Service() {
     private var handleBinder = ScreenRecordBinder()
     private lateinit var overlayView: View
     private lateinit var windowManager: WindowManager
-    private val detectors = setOf(
-        ObjectTrackingDetector(),
+    private val detectors = setOf<ImageDetector<DetectedObject>>(
+        ObjectTrackingDetector(this.applicationContext)
     )
 
     override fun onCreate() {
@@ -178,8 +179,6 @@ class ScreenRecordService : Service() {
         projection.stop()
     }
 
-    private var isSaved = false;
-
     private val imageReaderListener = ImageReader.OnImageAvailableListener { reader: ImageReader ->
         val image = reader.acquireLatestImage()
         if(image != null) {
@@ -192,10 +191,6 @@ class ScreenRecordService : Service() {
                 val image = InputImage.fromBitmap(bitmap, 0)
                 for (detector in detectors) {
                     detector.detect(image)
-                }
-                if(!isSaved) {
-                    Util.saveImageToLocalStorage(applicationContext, bitmap)
-                    isSaved = true;
                 }
 //            Log.d(ScreenScanCommonActivity.TAG, "rowStride:${imagePlane.rowStride} pixelStride:${imagePlane.pixelStride}")
             }
