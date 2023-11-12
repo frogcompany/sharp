@@ -73,6 +73,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val files = applicationContext.fileList()
+        Log.d(MainActivity.TAG, "----------------------------------------------------------")
+        Log.d(MainActivity.TAG, files.size.toString())
+        Log.d(MainActivity.TAG, files.joinToString("|"))
+
         val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
                 val executorService = Executors.newSingleThreadExecutor()

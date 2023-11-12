@@ -1,6 +1,7 @@
 package net.taptappun.taku.kobayashi.sharphackathon2023
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
@@ -9,6 +10,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.view.Display
 import android.view.Surface
@@ -38,13 +40,54 @@ class Util {
     companion object {
         fun saveImageToLocalStorage(context: Context, image: Bitmap) {
             val uuidFileName = "${UUID.randomUUID().toString()}.jpg"
+
+            val collection = if (Build.VERSION.SDK_INT >= 29) {
+                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            } else {
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            }
+
+            val contentValues = ContentValues()
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, uuidFileName)
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT >= 29) {
+                contentValues.put(MediaStore.Images.Media.IS_PENDING, true)
+            }
+
+            val contentResolver = context.contentResolver
+            val contentUri = contentResolver.insert(collection, contentValues)
+
+            //※2 ファイルを書き込む
+            val openedFile = contentResolver.openFileDescriptor(contentUri!!, "w", null)
+            val fileOutputStream = FileOutputStream(openedFile!!.fileDescriptor)
+
+            contentValues.clear()
+            if (Build.VERSION.SDK_INT >= 29) {
+                contentResolver.update(contentUri, contentValues.apply {
+                    put(MediaStore.Images.Media.IS_PENDING, false)
+                }, null, null)
+            } else {
+                contentResolver.update(contentUri, contentValues, null, null)
+            }
+
             val saveFile: File = File(context.getFilesDir(), uuidFileName)
-            val fileOutputStream = FileOutputStream(saveFile)
+            //val fileOutputStream = FileOutputStream(saveFile)
             image.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+            contentValues.clear()
+            if (Build.VERSION.SDK_INT >= 29) {
+                contentResolver.update(contentUri, contentValues.apply {
+                    put(MediaStore.Images.Media.IS_PENDING, false)
+                }, null, null)
+            } else {
+                contentResolver.update(contentUri, contentValues, null, null)
+            }
         }
 
         fun uploadFile(vararg uploadFiles: File): String {
-            val url = "送るURL"
+            val url = "https://miseai.site/api/upload"
             val media = "multipart/form-data".toMediaType()
             val boundary = System.currentTimeMillis().toString()
             try {
