@@ -14,6 +14,8 @@ jobs:
       matrix:
         compile-sdk: [33]
         build-tools: [33.0.2]
+        ndk-version: [26.1.10909125]
+        cmake-version: [3.22.1]
         root-project-path: [./Android]
 
     steps:
@@ -43,6 +45,19 @@ jobs:
         set +o pipefail
         yes | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. --licenses
         set -o pipefail
+    - name: install Android NDK
+      working-directory: ${{ matrix.root-project-path }}
+      run: android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=. --install "ndk;${{ matrix.ndk-version }}" "cmake;${{ matrix.cmake-version }}"
+    - name: Insert NDK path
+      working-directory: ${{ matrix.root-project-path }}
+      run: |
+        echo "ndk.dir=$PWD/ndk/${{ matrix.ndk-version }}" >> ./local.properties
+    - name: setup google-services.json
+      working-directory: ${{ matrix.root-project-path }}
+      env:
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        echo "${GOOGLE_SERVICES_JSON}" >> ./app/google-services.json
     - name: Setup Build Configs
       working-directory: ${{ matrix.root-project-path }}
       env:
