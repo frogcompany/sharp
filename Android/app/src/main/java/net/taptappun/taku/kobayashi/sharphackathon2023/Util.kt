@@ -7,15 +7,30 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
+import android.net.Uri
 import android.os.Build
+import android.provider.OpenableColumns
 import android.view.Display
 import android.view.Surface
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.core.graphics.toRect
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okio.BufferedSink
+import okio.Okio
+import okio.Source
+import okio.source
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.util.UUID
 
 
@@ -26,6 +41,77 @@ class Util {
             val saveFile: File = File(context.getFilesDir(), uuidFileName)
             val fileOutputStream = FileOutputStream(saveFile)
             image.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+        }
+
+        fun uploadFile(vararg uploadFiles: File): String {
+            val url = "送るURL"
+            val media = "multipart/form-data".toMediaType()
+            val boundary = System.currentTimeMillis().toString()
+            try {
+                val multipartBodyRequestBuilder = MultipartBody.Builder(boundary)
+                multipartBodyRequestBuilder.setType(MultipartBody.FORM)
+                for(uploadFile in uploadFiles) {
+                    val fileName = uploadFile.name
+                    multipartBodyRequestBuilder.addFormDataPart("file", fileName, uploadFile.asRequestBody(media))
+                }
+                val requestBody: RequestBody = multipartBodyRequestBuilder.build()
+                val request: Request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .build()
+                val client = OkHttpClient()
+                val response = client.newCall(request).execute()
+                val responseBody: String = response.body?.string().orEmpty()
+                return responseBody
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+            return ""
+        }
+
+        fun uploadFile(context: Context, uri: Uri): String {
+            val uploadInputStream = context.contentResolver.openInputStream(uri)
+            if(uploadInputStream == null) {
+                return ""
+            }
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            val nameIndex = cursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            cursor?.moveToFirst()
+            val fileName: String = if(nameIndex != null) {
+                cursor.getString(nameIndex)
+            } else {
+                "${UUID.randomUUID().toString()}.jpg"
+            }
+            val url = "https://miseai.site/api/upload"
+            val media = "multipart/form-data".toMediaType()
+            val boundary = System.currentTimeMillis().toString()
+            val multipartBodyRequestBuilder = MultipartBody.Builder(boundary)
+            multipartBodyRequestBuilder.setType(MultipartBody.FORM)
+            val inputStreamRequestBody = object : RequestBody() {
+                override fun contentType(): MediaType {
+                    return media
+                }
+
+                override fun contentLength(): Long {
+                    return uploadInputStream.available().toLong()
+                }
+
+                @Throws(IOException::class)
+                override fun writeTo(sink: BufferedSink) {
+                    val source = uploadInputStream.source()
+                    sink.writeAll(source)
+                }
+            }
+            multipartBodyRequestBuilder.addFormDataPart("fileName", fileName, inputStreamRequestBody)
+            val requestBody: RequestBody = multipartBodyRequestBuilder.build()
+            val request: Request = Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build()
+            val client = OkHttpClient()
+            val response = client.newCall(request).execute()
+            val responseBody: String = response.body?.string().orEmpty()
+            return responseBody
         }
 
         // https://gist.github.com/kwmt/60964abd7eecbf0dc384c441abab0912

@@ -14,12 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import net.taptappun.taku.kobayashi.sharphackathon2023.databinding.ActivityMainBinding
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
@@ -68,6 +71,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                val executorService = Executors.newSingleThreadExecutor()
+                executorService.execute {
+                    val responseBody = Util.uploadFile(applicationContext, uri)
+                    Log.d(MainActivity.TAG, responseBody)
+                }
+            }
+        }
+        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         // Example of a call to a native method
         //binding.sampleText.text = stringFromJNI()
     }

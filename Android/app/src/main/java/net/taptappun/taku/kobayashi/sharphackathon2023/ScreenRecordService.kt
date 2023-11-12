@@ -183,7 +183,6 @@ class ScreenRecordService : Service() {
                 val bitmap = Bitmap.createBitmap(image.width + rowPadding / pixelStride, image.height, Bitmap.Config.ARGB_8888)
                 bitmap.copyPixelsFromBuffer(imagePlane.buffer)
                 if(!isSaved) {
-                    Log.d(MainActivity.TAG, "save")
                     Util.saveImageToLocalStorage(applicationContext, bitmap)
                     isSaved = true;
                 }
